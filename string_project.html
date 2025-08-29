@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>StringLab — JS Strings Masterclass</title>
+<link rel="stylesheet" href="string_project.css">
+</head>
+<body>
+<header>
+  <div>
+    <h1>StringLab — a single-project masterclass for JS strings</h1>
+    <p class="lead">Interactively explore creation, Unicode, transforms, regex, templates, encodings, and performance — all in one place. ✔️</p>
+  </div>
+  <div style="margin-left:auto" class="flex">
+    <div class="badge">Single-file</div>
+    <div class="muted-small">Open: save → <code>index.html</code> → double-click</div>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT: editor & quick actions -->
+  <div class="left">
+    <div class="card">
+      <label for="input">Input text (edit me) — this is the single source used everywhere</label>
+      <textarea id="input" spellcheck="true"></textarea>
+      <div class="controls">
+        <button id="preset-sample" class="small">Load Sample</button>
+        <button id="copy" class="small">Copy Result</button>
+        <button id="reset" class="small">Reset</button>
+        <button id="apply-last" class="small">Apply last transform → replace input</button>
+        <div style="flex:1"></div>
+      </div>
+      <div style="margin-top:10px" class="muted-small">
+        Tip: try emojis, accented letters, combining marks (a + ́), family emojis, and long text. The app shows UTF-16 code units vs code points vs grapheme clusters.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Immutable Demo</h3>
+      <p class="muted">Strings are <strong>immutable</strong>. Actions produce new strings — the input doesn't change unless you "Apply".</p>
+      <div class="row" style="margin-top:8px">
+        <button id="make-upper">toUpperCase()</button>
+        <button id="make-lower">toLowerCase()</button>
+        <button id="trim-collapse">Trim & collapse</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button id="title-case">Title Case</button>
+        <button id="swap-case">Swap Case</button>
+        <button id="repeat-3">Repeat ×3</button>
+      </div>
+      <div style="margin-top:8px">
+        <div class="smallmuted">Last transform result (click "Apply last transform" to replace input):</div>
+        <pre id="lastTransform" class="result"></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Presets & Examples</h3>
+      <div class="controls" style="margin-top:6px">
+        <button data-preset="short">Short</button>
+        <button data-preset="emoji">Emoji-heavy</button>
+        <button data-preset="accent">Accented & combining</button>
+        <button data-preset="url">URL & mentions</button>
+      </div>
+      <div style="margin-top:10px" class="muted-small">Use presets to test edge cases.</div>
+    </div>
+  </div>
+
+  <!-- RIGHT: interactive cards -->
+  <div class="right">
+    <div class="card">
+      <h3>Stats & Indexing</h3>
+      <div class="muted-small">Shows UTF-16 length, code points, grapheme clusters (if supported), words, lines, UTF-8 bytes.</div>
+      <div style="margin-top:8px" class="row">
+        <div>
+          <div class="pill">UTF-16 length</div> <span id="len" class="badge">0</span>
+        </div>
+        <div>
+          <div class="pill">Code points</div> <span id="codepoints" class="badge">0</span>
+        </div>
+      </div>
+      <div style="margin-top:8px" class="row">
+        <div>
+          <div class="pill">Grapheme clusters</div> <span id="graphemes" class="badge">0</span>
+        </div>
+        <div>
+          <div class="pill">UTF-8 bytes</div> <span id="utf8bytes" class="badge">0</span>
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <div class="muted-small">Words: <span id="words">0</span> • Lines: <span id="lines">0</span></div>
+      </div>
+      <div style="margin-top:8px">
+        <details>
+          <summary class="muted-small">Character tables (UTF-16 units and code points)</summary>
+          <div style="margin-top:8px">
+            <div style="max-height:160px; overflow:auto">
+              <table id="unitTable"><thead><tr><th>i</th><th>unit</th><th>char</th><th>codeUnit</th></tr></thead><tbody></tbody></table>
+              <table id="pointTable" style="margin-top:8px"><thead><tr><th>#</th><th>char</th><th>codePoint</th><th>hex</th></tr></thead><tbody></tbody></table>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Transforms & Slicing</h3>
+      <div class="muted-small">Apply common transforms and slice/substring examples.</div>
+      <div style="margin-top:8px" class="split">
+        <div>
+          <label>Slice — start (can be negative)</label>
+          <input id="sliceStart" type="number" value="0">
+        </div>
+        <div>
+          <label>Slice — end (leave empty for to-end)</label>
+          <input id="sliceEnd" type="number" placeholder="end">
+        </div>
+      </div>
+      <div class="controls" style="margin-top:8px">
+        <button id="doSlice" class="small">Apply slice()</button>
+        <button id="doSubstring" class="small">Apply substring()</button>
+        <button id="doSubstr" class="small">Apply substr()</button>
+      </div>
+
+      <div style="margin-top:8px">
+        <label>Result</label>
+        <pre id="sliceResult" class="result"></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Regex & Replace</h3>
+      <div class="muted-small">Find/replace with plain string or regex. Use capture groups like <code>$1</code>.</div>
+      <label>Find</label>
+      <input id="findText" type="text" placeholder="hello or \\w+">
+      <label>Replace with</label>
+      <input id="replaceText" type="text" placeholder="WORLD or $1!">
+      <div class="row" style="margin-top:8px">
+        <div><label><input id="useRegex" type="checkbox"> use regex</label></div>
+        <div><label>flags <input id="regexFlags" type="text" placeholder="gimu" value="g"></label></div>
+      </div>
+      <div class="controls" style="margin-top:8px">
+        <button id="doReplace">Replace</button>
+        <button id="replaceAll">Replace All (safe)</button>
+        <button id="linkify">Linkify @mentions & hashtags</button>
+      </div>
+      <div style="margin-top:8px">
+        <label>Preview (HTML escaped + highlights)</label>
+        <div id="preview" class="result" style="white-space:pre-wrap; word-break:break-word"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Unicode & Emojis</h3>
+      <div class="muted-small">Shows code points, combining marks, families, and how to work safely with them.</div>
+      <div style="margin-top:8px" class="row">
+        <div>
+          <button id="showCharCodes">Show char codes (first 20)</button>
+        </div>
+        <div>
+          <button id="countGraphemes">Count graphemes (Intl.Segmenter)</button>
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <pre id="codes" class="result" style="max-height:160px; overflow:auto"></pre>
+      </div>
+      <div style="margin-top:6px" class="muted-small">Note: emojis such as 👨‍👩‍👧‍👦 may be multiple code points combined by zero-width joiners (ZWJ).</div>
+    </div>
+
+    <div class="card">
+      <h3>Encoding & Base64</h3>
+      <div class="muted-small">UTF-8 bytes, Base64 encode/decode (handles Unicode correctly).</div>
+      <div style="margin-top:8px" class="row">
+        <div>
+          <button id="encodeBase64">Base64 → encode</button>
+        </div>
+        <div>
+          <button id="decodeBase64">Base64 → decode</button>
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <label>Base64</label>
+        <input id="base64" type="text" placeholder="result">
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Template Literals & Tagged Templates</h3>
+      <div class="muted-small">Safe interpolation using object maps and a tagged template example (escapes HTML).</div>
+      <label>Template (use <code>${'name'}</code> placeholders)</label>
+      <input id="tpl" type="text" value="Hello ${name}, your city is ${user.city}">
+      <label>Variables (JSON)</label>
+      <input id="vars" type="text" value='{"name":"Alice","user":{"city":"Münich & Co"}}'>
+      <div class="controls" style="margin-top:8px">
+        <button id="interp">Interpolate safely</button>
+        <button id="tagged">Tagged template (escape values)</button>
+        <button id="rawdemo">Show String.raw</button>
+      </div>
+      <div style="margin-top:8px">
+        <label>Output</label>
+        <pre id="tplOut" class="result"></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Utilities: Slugify / HTML escape / Pad</h3>
+      <div class="muted-small">Common utilities in real apps.</div>
+      <div style="margin-top:8px" class="split">
+        <div>
+          <button id="slugifyBtn">Slugify</button>
+        </div>
+        <div>
+          <button id="escapeHtmlBtn">Escape HTML</button>
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <label>Pad / Repeat</label>
+        <div class="row">
+          <input id="padCount" type="number" value="6">
+          <input id="padChar" type="text" value="0">
+        </div>
+        <div class="controls" style="margin-top:8px">
+          <button id="padStartBtn">padStart</button>
+          <button id="padEndBtn">padEnd</button>
+        </div>
+      </div>
+      <div style="margin-top:8px">
+        <label>Utility output</label>
+        <pre id="utilOut" class="result"></pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Performance: build big strings</h3>
+      <div class="muted-small">A tiny perf demo: string concat vs array join.</div>
+      <div style="margin-top:8px" class="row">
+        <input id="perfCount" type="number" value="20000">
+        <button id="perfRun">Run test</button>
+      </div>
+      <div style="margin-top:8px">
+        <pre id="perfResult" class="result"></pre>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div>Made for learning strings thoroughly. Try the buttons, inspect the code, and modify to test edge cases. 🔍</div>
+</footer>
+<script src="string_project.js"></script>
+</body>
+</html>
